@@ -2,7 +2,8 @@ const { promisify } = require('util')
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
-const AppError = require("./../utils/appErrors")
+const AppError = require("./../utils/appErrors");
+const sendEmail = require('../utils/email');
 
 const signToken = id => {
     return jwt.sign(
@@ -24,6 +25,7 @@ exports.signUp = catchAsync(
                 email: req.body.email,
                 password: req.body.password,
                 passwordConfirm: req.body.passwordConfirm,
+                role: req.body.role,
             }
         );
         const token = signToken(newUser._id)
@@ -75,4 +77,29 @@ exports.protect = catchAsync(async (req, res, next) => {
     // Granting permission to the next step i.e to Protected Route
     req.user = freshUser;
     next()
+});
+
+exports.restrictTo = (...roles) => {
+    return (req, res, next) => {
+        // roles is an array ["admin","lead-guide"]
+        if (!roles.includes(req.user.role)) return next(new AppError("You Don't have permission to access this route", 403))
+
+        next();
+    }
+}
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+    // Get user based on posted email
+    const user = await User.findOne({ email: req.body.email })
+    if (!user) {
+        return next(new AppError(`There is no user with that email address`, 404))
+    }
+    // Generate a random token
+    const resetToken = user.createPasswordResetToken();
+    await user.save({ validateBeforeSave: false })
+    // send it back as an email
+    // const resetUrl = 
 })
+exports.resetPassword = (req, res, next) => {
+
+}
