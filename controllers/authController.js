@@ -19,6 +19,14 @@ const signToken = id => {
 }
 const createSendToken = (user, statusCode, res, shouldSendUserData = false) => {
   const token = signToken(user._id);
+  const cookieOptions = {
+    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+    httpOnly: true
+  }
+  if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
+  res.cookie("jwt", token, cookieOptions)
+  // To not show password in the body of the response
+  user.password = "Lol I can't Show Password Here 😁"
   if (shouldSendUserData) {
     res.status(statusCode).json({
       status: "success",
@@ -113,7 +121,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
                   If you didn't asked for reset password simply ignore this email.
   `
   try {
-    await sendEmail({
+    sendEmail({
       email: user.email,
       subject: "Your Password Reset Token (valid for 10 mins ONLY)",
       message
@@ -144,7 +152,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   // If token not expired and there is a user, set the new password
 
-  if (!user) return next(new AppError("Token is invalid or expired", 400))
+  if (!user) return next(new AppError("Token is either invalid or expired", 400))
   user.password = req.body.password
   user.passwordConfirm = req.body.passwordConfirm
   user.passwordResetToken = undefined
