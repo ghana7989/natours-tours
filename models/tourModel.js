@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 var slugify = require('slugify');
 const validator = require('validator');
+const User = require('./userModel');
 
 const toursSchema = new mongoose.Schema({
   name: {
@@ -106,6 +107,12 @@ const toursSchema = new mongoose.Schema({
       description: String,
       day: Number
     }
+  ],
+  guides: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: "User"
+    }
   ]
 }, {
   toJSON: { virtuals: true },
@@ -119,6 +126,11 @@ toursSchema.pre("save", function (next) {
   this.slug = slugify(this.name, { lower: true })
   next()
 })
+// toursSchema.pre("save", async function (next) {
+//   const guidesPromises = this.guides.map(async id => await User.findById(id))
+//   const guides = await Promise.all(guides_promises)
+//   next()
+// })
 // This Document Middleware will run after all the pre middlewares ran
 // toursSchema.post("save", function (doc, next) {
 //     console.log(doc);
@@ -132,11 +144,17 @@ toursSchema.pre(/^find/, function (next) {
   this.start = Date.now()
   next();
 });
+toursSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "guides",
+    select: "-__v -passwordChangedAt"
+  })
+  next()
+})
 toursSchema.post(/^find/, function (docs, next) {
   console.log(`Query Took ${Date.now() - this.start} milliseconds`);
   next();
 })
-
 // AGGREGATION MIDDLEWARE
 toursSchema.pre("aggregate", function (next) {
   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } })
