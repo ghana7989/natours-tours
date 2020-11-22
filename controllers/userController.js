@@ -1,6 +1,8 @@
 const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("./../utils/appErrors");
+// const authController = require('./../controllers/authController');
+const factory = require("./handlerFactory")
 
 function filterObj(obj, ...allowedFields) {
   const newObj = {}
@@ -12,16 +14,6 @@ function filterObj(obj, ...allowedFields) {
   return newObj
 }
 
-exports.getAllUsers = catchAsync(async (req, res, next) => {
-  const users = await User.find();
-  res.status(200).json({
-    status: "success",
-    results: users.length,
-    data: {
-      users
-    }
-  })
-})
 
 exports.updateMe = catchAsync(async (req, res, next) => {
   // 1. Create an error if the user POSTs password data
@@ -42,7 +34,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 })
 
 exports.deleteMe = catchAsync(async (req, res, next) => {
-
+  
   await User.findByIdAndUpdate(req.user.id, { active: false })
   res.send(204).json({
     status: "success",
@@ -50,12 +42,6 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   })
 })
 
-exports.getUser = (req, res) => {
-  res.status(500).json({
-    status: "Error",
-    message: "This is route is under construction"
-  })
-}
 
 exports.updateUser = (req, res) => {
   res.status(500).json({
@@ -67,13 +53,11 @@ exports.updateUser = (req, res) => {
 exports.createUser = (req, res) => {
   res.status(500).json({
     status: "Error",
-    message: "This is route is under construction"
+    message: "This is route is under construction. use /signup"
   })
 }
-exports.deleteUser = (req, res) => {
-  res.status(500).json({
-    status: "Error",
-    message: "This is route is under construction"
-  })
-}
-
+exports.getAllUsers = factory.getAll(User)
+exports.getUser = factory.getOne(User)
+exports.deleteUser = factory.deleteOne(User)
+// Don't update passwords with below route
+exports.updateUser = factory.updateOne(User)
