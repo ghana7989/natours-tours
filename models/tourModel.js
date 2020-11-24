@@ -118,6 +118,10 @@ const toursSchema = new mongoose.Schema({
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
 })
+
+toursSchema.index({ price: 1, ratingsAverage: -1 })
+toursSchema.index({ slug: 1 })
+
 toursSchema.virtual("tourDurationInWeeks").get(function () {
   return (this.duration / 7).toFixed(2)
 })
