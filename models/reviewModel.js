@@ -72,11 +72,11 @@ reviewSchema.statics.calculateAverageRatings = async function (tourId) {
       ratingsQuantity: stats[0].avgRating
     });
   } else {
-      await Tour.findByIdAndUpdate(tourId, {
-        ratingsAverage: 0,
-        ratingsQuantity: 3
-      });
-    
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsAverage: 0,
+      ratingsQuantity: 3
+    });
+
   }
 }
 
@@ -89,6 +89,8 @@ reviewSchema.post(/^findOneAnd/, async function (reviewDoc, next) {
   await reviewDoc.constructor.calcAverageRating(reviewDoc.tour);
   next();
 });
+
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true })
 
 const Review = mongoose.model("Review", reviewSchema)
 
