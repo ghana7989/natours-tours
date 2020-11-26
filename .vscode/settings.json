@@ -2,6 +2,7 @@
     "files.autoSave": "afterDelay",
     "editor.tabSize": 2,
     "cSpell.words": [
+      "Natours",
       "beach",
       "dsphere",
       "latlng",
@@ -9,5 +10,12 @@
       "lummus park beach",
       "park"
     ],
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "singleQuote": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "javascript.preferences.quoteStyle": "single",
+    "typescript.preferences.quoteStyle": "single",
+    "prettier.jsxSingleQuote": true,
+    "prettier.singleQuote": true,
+    "prettier.vueIndentScriptAndStyle": true,
+    "workbench.list.smoothScrolling": true
 }
