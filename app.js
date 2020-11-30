@@ -30,7 +30,18 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // Set Security HTTP headers
-app.use(helmet())
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'", 'https:', 'http:', 'data:', 'ws:'],
+      baseUri: ["'self'"],
+      fontSrc: ["'self'", 'https:', 'http:', 'data:'],
+      scriptSrc: ["'self'", 'https:', 'http:', 'blob:'],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https:', 'http:'],
+      imgSrc: ["'self'", 'data:', 'blob:'],
+    },
+  })
+);
 
 // Limiting heavy traffic in short span from the same client end point
 const limiter = rateLimit({
