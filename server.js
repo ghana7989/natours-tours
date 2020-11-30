@@ -6,6 +6,7 @@ dotenv.config({
 })
 process.on("uncaughtException", err => {
   console.log("uncaughtException! shutting down the server...")
+  console.error(err)
   console.log(err.name, err.message)
   process.exit(1)
 })
