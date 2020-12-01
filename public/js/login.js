@@ -19,3 +19,12 @@ export async function login(email, password) {
     showAlert("error", error.response?.data?.message)
   }
 }
+
+export const logout = async () => {
+  try {
+    await axios.get("http://localhost:3000/api/v1/users/logout");
+    location.reload()
+  } catch (error) {
+    showAlert("error", error.response?.data?.message)
+  }
+}

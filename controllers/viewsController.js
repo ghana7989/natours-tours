@@ -1,5 +1,6 @@
 const Tour = require("../models/tourModel")
 const catchAsync = require("../utils/catchAsync")
+const AppError = require("../utils/appErrors")
 
 exports.getOverview = catchAsync(async (req, res, next) => {
   // 1. Get tour data from collection
@@ -13,9 +14,12 @@ exports.getOverview = catchAsync(async (req, res, next) => {
   })
 })
 
-exports.getTour = catchAsync(async (req, res) => {
+exports.getTour = catchAsync(async (req, res, next) => {
 
   const tour = await Tour.findOne({ slug: req.params.slug }).populate('reviews')
+
+
+  if (tour === null) return next(new AppError("There is no tour with that name", 404))
 
   res.status(200).set(
     'Content-Security-Policy',
@@ -29,5 +33,11 @@ exports.getTour = catchAsync(async (req, res) => {
 exports.getLoginForm = (req, res) => {
   res.status(200).render('login', {
     title: "Log into your account"
+  })
+}
+
+exports.getAccount = (req, res) => {
+  res.status(200).render('account', {
+    title: 'Your Account'
   })
 }
