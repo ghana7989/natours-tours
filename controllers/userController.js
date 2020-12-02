@@ -19,6 +19,7 @@ exports.getMe = (req, res, next) => {
   next()
 }
 exports.updateMe = catchAsync(async (req, res, next) => {
+ 
   // 1. Create an error if the user POSTs password data
   if (req.body.password || req.body.passwordConfirm) {
     return next(new AppError("This route is not for password updates use /updateMyPassword", 401))
@@ -46,12 +47,12 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
 })
 
 
-exports.updateUser = (req, res) => {
-  res.status(500).json({
-    status: "Error",
-    message: "This is route is under construction"
-  })
-}
+// exports.updateUser = (req, res) => {
+//   res.status(500).json({
+//     status: "Error",
+//     message: "This is route is under construction"
+//   })
+// }
 
 exports.createUser = (req, res) => {
   res.status(500).json({

@@ -12,13 +12,13 @@ router.get("/logout", logout)
 router.post("/forgotPassword", forgotPassword)
 router.patch("/resetPassword/:token", resetPassword)
 
+router.patch("/updateMyPassword", protect, updatePassword)
+router.get("/me", protect, getMe, getUser)
+router.patch("/updateMe", protect, updateMe)
+router.delete("/deleteMe", protect, deleteMe)
+
 // Protect all routes after this middleware
 router.use(protect)
-
-router.patch("/updateMyPassword", updatePassword)
-router.get("/me", getMe, getUser)
-router.patch("/updateMe", updateMe)
-router.delete("/deleteMe", deleteMe)
 
 // CAUTION these routes only have admin access
 router.use(restrictTo("admin"))
