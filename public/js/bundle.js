@@ -8576,7 +8576,7 @@ function displayMap(locations) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.updateData = void 0;
+exports.updateSettings = void 0;
 
 var _axios = _interopRequireDefault(require("axios"));
 
@@ -8588,53 +8588,52 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-var updateData = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(name, email) {
-    var res;
+// type is either 'data' or 'password' 
+var updateSettings = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(data, type) {
+    var url, res;
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            _context.prev = 0;
-            _context.next = 3;
+            url = type === 'password' ? '/api/v1/users/updateMyPassword' : '/api/v1/users/updateMe';
+            _context.prev = 1;
+            _context.next = 4;
             return (0, _axios.default)({
               method: 'PATCH',
-              url: '/api/v1/users/updateMe',
-              data: {
-                name: name,
-                email: email
-              }
+              url: url,
+              data: data
             });
 
-          case 3:
+          case 4:
             res = _context.sent;
 
             if (res.data.status === 'success') {
-              (0, _alerts.showAlert)('success', 'Data updated successfully');
+              (0, _alerts.showAlert)('success', "".concat(type.toUpperCase(), " updated successfully"));
             }
 
-            _context.next = 10;
+            _context.next = 11;
             break;
 
-          case 7:
-            _context.prev = 7;
-            _context.t0 = _context["catch"](0);
+          case 8:
+            _context.prev = 8;
+            _context.t0 = _context["catch"](1);
             (0, _alerts.showAlert)('error', _context.t0.response.data.message);
 
-          case 10:
+          case 11:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[0, 7]]);
+    }, _callee, null, [[1, 8]]);
   }));
 
-  return function updateData(_x, _x2) {
+  return function updateSettings(_x, _x2) {
     return _ref.apply(this, arguments);
   };
 }();
 
-exports.updateData = updateData;
+exports.updateSettings = updateSettings;
 },{"axios":"../../node_modules/axios/index.js","./alerts":"alerts.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
@@ -8902,11 +8901,16 @@ var _mapBox = require("./mapBox");
 
 var _updateSettings = require("./updateSettings");
 
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
 // DOM Elements
 var mapBox = document.getElementById('map');
 var loginForm = document.querySelector('.form--login');
 var logOutBtn = document.querySelector('.nav__el--logout');
-var userDataForm = document.querySelector('.form-user-data'); // Values
+var userDataForm = document.querySelector('.form-user-data');
+var userPasswordForm = document.querySelector('.form-user-settings'); // Values
 
 if (mapBox) {
   var locations = JSON.parse(mapBox.dataset.locations);
@@ -8927,8 +8931,52 @@ if (userDataForm) {
     e.preventDefault();
     var email = document.getElementById('email').value;
     var name = document.getElementById('name').value;
-    (0, _updateSettings.updateData)(name, email);
+    (0, _updateSettings.updateSettings)({
+      name: name,
+      email: email
+    }, 'data');
   });
+}
+
+if (userPasswordForm) {
+  userPasswordForm.addEventListener('submit', /*#__PURE__*/function () {
+    var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(e) {
+      var passwordCurrent, password, passwordConfirm;
+      return regeneratorRuntime.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              e.preventDefault();
+              document.querySelector('.btn--save-password').textContent = 'Updating...';
+              passwordCurrent = document.getElementById('password-current').value;
+              password = document.getElementById('password').value;
+              passwordConfirm = document.getElementById('password-confirm').value;
+              _context.next = 7;
+              return (0, _updateSettings.updateSettings)({
+                password: password,
+                passwordConfirm: passwordConfirm,
+                passwordCurrent: passwordCurrent
+              }, 'password');
+
+            case 7:
+              document.getElementById('password-current').value = null;
+              document.getElementById('password').value = null;
+              document.getElementById('password-confirm').value = null;
+              document.getElementById('password-confirm').blur();
+              document.querySelector('.btn--save-password').textContent = 'Save Password';
+
+            case 12:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee);
+    }));
+
+    return function (_x) {
+      return _ref.apply(this, arguments);
+    };
+  }());
 }
 
 if (logOutBtn) {
@@ -8962,7 +9010,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54558" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61253" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
