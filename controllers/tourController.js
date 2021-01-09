@@ -24,9 +24,30 @@ exports.uploadTourImages = upload.fields([
   { name: 'imageCover', maxCount: 1 },
   { name: 'images', maxCount: 3 }
 ])
-exports.resizeTourImages = (req, res, next) => {
+exports.resizeTourImages = catchAsync(async (req, res, next) => {
+  if (!req.files.imageCover || !req.files.images) return next();
+
+  const imageCoverFileName = `tour-${req.params.id}-${Date.now()}-cover.jpeg`
+  await sharp(req.files.imageCover[0].buffer)
+    .resize(2000, 1333)
+    .toFormat('jpeg')
+    .jpeg({ quality: 80 })
+    .toFile(`public/img/tours/${imageCoverFileName}`)
+  // To update the document
+  req.body.imageCover = imageCoverFileName;
+  req.body.images = []
+  await Promise.all(req.files.images.map(async (image, index) => {
+    const fileName = `tour-${req.params.id}-${Date.now()}-${index + 1}.jpeg`;
+    await sharp(image.buffer)
+      .resize(2000, 1333)
+      .toFormat('jpeg')
+      .jpeg({ quality: 80 })
+      .toFile(`public/img/tours/${fileName}`)
+    req.body.images.push(fileName)
+  }))
+  
   next()
-} 
+})
 exports.aliasTopFiveTours = (req, res, next) => {
   req.query.limit = 5;
   req.query.sort = "-ratingsAverage price";

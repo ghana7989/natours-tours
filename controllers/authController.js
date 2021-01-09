@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require("./../utils/appErrors");
-const sendEmail = require('../utils/email');
+const Email = require('../utils/email');
 
 const signToken = id => {
   return jwt.sign(
@@ -53,6 +53,9 @@ exports.signUp = catchAsync(
         role: req.body.role,
       }
     );
+    const url = `${req.protocol}://${req.get('host')}/me`
+    console.log('url: ', url);
+    await new Email(newUser, url).sendWelcome()
     createSendToken(newUser, 201, res, true)
   }
 );
@@ -90,7 +93,7 @@ exports.restrictTo = (...roles) => {
 
 
 exports.protect = catchAsync(async (req, res, next) => {
- 
+
   let token;
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1]
@@ -127,17 +130,10 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false })
   // send it back as an email
-  const resetUrl = `${req.protocol}://${req.get("host")}/api/v1/users/resetPassword/${resetToken}`;
 
-  const message = `Forgot your password? Submit your new credentials here ${resetUrl}.\n
-                  If you didn't asked for reset password simply ignore this email.
-  `
   try {
-    sendEmail({
-      email: user.email,
-      subject: "Your Password Reset Token (valid for 10 mins ONLY)",
-      message
-    })
+    const resetUrl = `${req.protocol}://${req.get("host")}/api/v1/users/resetPassword/${resetToken}`;
+    await new Email(user, resetUrl).sendPasswordReset()
 
     res.status(200).json({
       status: "success",
